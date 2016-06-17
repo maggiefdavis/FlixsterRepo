@@ -1,10 +1,13 @@
 package com.codepath.flixster2;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -31,25 +34,22 @@ public class MoviesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //Only call setContentView once right at the top
         setContentView(R.layout.activity_movies);
-
+        //Customize action bar
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         getSupportActionBar().setCustomView(R.layout.actionbar_title);
         //Initialize movies
         movies = new ArrayList<Movie>();
         //Get the ListView we want to populate
         lvMovies = (ListView) findViewById(R.id.lvMovies);
+        setUpListViewListener();
         //Create ArrayAdapter
-        //ArrayAdapter<Movie> adapter = new ArrayAdapter<Movie>(this, android.R.layout.simple_list_item_1, movies);
         adapter = new MoviesAdapter(this, movies);
-
         //Associate adapter with the ListView
         if (lvMovies !=null) {
             lvMovies.setAdapter(adapter);
         }
-
         //Get the actual movies
         fetchMoviesAsync();
-
         //Get swipe container view
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         //Setup refresh listener which triggers new data loading
@@ -66,8 +66,6 @@ public class MoviesActivity extends AppCompatActivity {
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
-
-
     }
 
     public void fetchMoviesAsync() {
@@ -97,4 +95,37 @@ public class MoviesActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private void setUpListViewListener() {
+        lvMovies.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                launchDetailsView(position);
+            }
+        });
+
+    }
+
+    private void launchDetailsView(int position) {
+        Intent i = new Intent(MoviesActivity.this, DetailsActivity.class);
+        Movie movie = adapter.getItem(position);
+        i.putExtra("original_title", movie.getOriginalTitle());
+        i.putExtra("backdrop_path", movie.getBackdropPath());
+        i.putExtra("release_date", movie.getReleaseDate());
+        i.putExtra("rating", movie.getRating());
+        i.putExtra("overview", movie.getOverview());
+        startActivity(i);
+    }
+/*
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+            String item = data.getExtras().getString("item");
+            int position = data.getExtras().getInt("position");
+            todoItems.set(position, item);
+            aToDoAdapter.notifyDataSetChanged();
+            writeItems();
+        }
+    }*/
+
 }
